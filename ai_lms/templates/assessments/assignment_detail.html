@@ -1,0 +1,543 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ assignment.title }} - AI-Powered LMS{% endblock %}
+
+{% block extra_css %}
+<style>
+.assignment-questions {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    margin-bottom: 2rem;
+}
+
+.questions-content {
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 1.5rem;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    line-height: 1.8;
+    font-size: 1.05rem;
+}
+
+.submission-form-questions {
+    background: #e7f3ff;
+    border-left: 5px solid #667eea;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.info-box {
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid;
+    margin-bottom: 1rem;
+}
+
+.info-box.course { border-left-color: #0d6efd; background: #e7f1ff; }
+.info-box.due-date { border-left-color: #dc3545; background: #ffe7e7; }
+.info-box.score { border-left-color: #ffc107; background: #fff9e7; }
+.info-box.status { border-left-color: #198754; background: #e7ffe7; }
+
+.badge.bg-draft { background-color: #6c757d !important; }
+.badge.bg-published { background-color: #198754 !important; }
+.badge.bg-closed { background-color: #dc3545 !important; }
+.badge.bg-submitted { background-color: #0dcaf0 !important; }
+.badge.bg-graded { background-color: #198754 !important; }
+.badge.bg-returned { background-color: #6610f2 !important; }
+
+.submission-card {
+    border-left: 5px solid #198754;
+    background: #f8f9fa;
+}
+
+.teacher-feedback {
+    background: #fff3cd;
+    border-left: 5px solid #ffc107;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.ai-assist-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+.submission-row:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Assignment Details Card -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard-check me-2"></i>Assignment Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h3 class="mb-3 fw-bold">{{ assignment.title }}</h3>
+                    
+                    <!-- Info Boxes -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="info-box course">
+                                <i class="bi bi-book fs-5 me-2"></i>
+                                <strong>Course:</strong><br>
+                                <span class="ms-4">{{ assignment.course.title }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box due-date">
+                                <i class="bi bi-calendar-event fs-5 me-2"></i>
+                                <strong>Due Date:</strong><br>
+                                <span class="ms-4 {% if assignment.is_overdue %}text-danger fw-bold{% endif %}">
+                                    {{ assignment.due_date|date:"M d, Y g:i A" }}
+                                    {% if assignment.is_overdue %}
+                                        <span class="badge bg-danger ms-1">Overdue</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box score">
+                                <i class="bi bi-star fs-5 me-2"></i>
+                                <strong>Max Score:</strong><br>
+                                <span class="ms-4">{{ assignment.max_score }} points</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box status">
+                                <i class="bi bi-info-circle fs-5 me-2"></i>
+                                <strong>Status:</strong><br>
+                                <span class="ms-4">
+                                    <span class="badge bg-{{ assignment.status|lower }}">
+                                        {{ assignment.get_status_display }}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Instructions Section -->
+                    {% if assignment.instructions %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-info">
+                            <i class="bi bi-list-check me-2"></i>Instructions:
+                        </h6>
+                        <div class="alert alert-info">
+                            <div style="white-space: pre-wrap;">{{ assignment.instructions }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- ASSIGNMENT QUESTIONS - HIGHLIGHTED -->
+                    {% if assignment.description %}
+                    <div class="assignment-questions">
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-question-circle-fill me-2"></i>Assignment Questions
+                        </h5>
+                        <div class="questions-content">
+                            {{ assignment.description }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Attachment -->
+                    {% if assignment.attachment %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-success">
+                            <i class="bi bi-paperclip me-2"></i>Attachment:
+                        </h6>
+                        <a href="{{ assignment.attachment.url }}" class="btn btn-outline-success" target="_blank">
+                            <i class="bi bi-download me-2"></i>Download Attachment
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Student View: Submission Section -->
+            {% if user.is_student %}
+                {% if user_submission %}
+                <!-- Already Submitted -->
+                <div class="card border-success shadow-sm submission-card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-check-circle-fill me-2"></i>Your Submission
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <strong>Submitted Successfully!</strong><br>
+                            <small>Submitted on: {{ user_submission.submitted_at|date:"M d, Y g:i A" }}</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong class="text-primary">
+                                <i class="bi bi-pencil-square me-2"></i>Your Answer:
+                            </strong>
+                            <div class="bg-white p-3 rounded mt-2 border" style="white-space: pre-wrap;">
+                                {{ user_submission.content }}
+                            </div>
+                        </div>
+                        
+                        {% if user_submission.file %}
+                        <div class="mb-3">
+                            <strong class="text-success">
+                                <i class="bi bi-paperclip me-2"></i>Attached File:
+                            </strong>
+                            <a href="{{ user_submission.file.url }}" target="_blank" class="btn btn-sm btn-outline-success ms-2">
+                                <i class="bi bi-download"></i> Download
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if user_submission.score %}
+                        <div class="alert alert-success mt-3">
+                            <h5 class="mb-2">
+                                <i class="bi bi-trophy-fill me-2"></i>Grade: 
+                                <strong>{{ user_submission.score }}/{{ assignment.max_score }}</strong>
+                                {% if user_submission.percentage_score %}
+                                <span class="ms-2">({{ user_submission.percentage_score|floatformat:1 }}%)</span>
+                                {% endif %}
+                            </h5>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-hourglass-split me-2"></i>
+                            Your submission is awaiting grading.
+                        </div>
+                        {% endif %}
+                        
+                        {% if user_submission.teacher_feedback_set.all %}
+                        <div class="mt-3">
+                            <strong class="text-warning">
+                                <i class="bi bi-chat-left-text me-2"></i>Teacher Feedback:
+                            </strong>
+                            {% for feedback in user_submission.teacher_feedback_set.all %}
+                            <div class="teacher-feedback mt-2">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong>{{ feedback.teacher.get_full_name|default:feedback.teacher.username }}</strong>
+                                    <small class="text-muted">{{ feedback.created_at|date:"M d, Y" }}</small>
+                                </div>
+                                <div style="white-space: pre-wrap;">{{ feedback.feedback_text }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-4">
+                            <a href="{% url 'assessments:submission_detail' user_submission.pk %}" class="btn btn-primary">
+                                <i class="bi bi-eye me-2"></i>View Full Submission Details
+                            </a>
+                            {% if not user_submission.ai_feedback %}
+                            <a href="{% url 'assessments:generate_ai_feedback' user_submission.pk %}" class="btn btn-info">
+                                <i class="bi bi-robot me-2"></i>Get AI Feedback
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Submit Assignment Form -->
+                <div class="card border-primary shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-upload me-2"></i>Submit Your Work
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'assessments:submit_assignment' assignment.pk %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <!-- Show Questions Again for Reference -->
+                            {% if assignment.description %}
+                            <div class="submission-form-questions">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="bi bi-question-circle-fill me-2" style="color: #667eea;"></i>
+                                    Questions to Answer:
+                                </h6>
+                                <div style="white-space: pre-wrap; line-height: 1.8;">{{ assignment.description }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-4">
+                                <label for="id_content" class="form-label fw-bold">
+                                    <i class="bi bi-pencil-square me-2 text-primary"></i>Your Answer *
+                                </label>
+                                <small class="text-muted d-block mb-2">
+                                    Write your complete answers addressing all questions above
+                                </small>
+                                <textarea name="content" id="id_content" class="form-control" rows="15" 
+                                          placeholder="Write your answers here...
+
+Make sure to:
+• Answer all parts of each question
+• Show your work and reasoning
+• Provide examples where applicable
+• Cite sources if research is required
+• Use proper formatting and grammar" 
+                                          required></textarea>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="id_file" class="form-label fw-bold">
+                                    <i class="bi bi-paperclip me-2 text-success"></i>Upload File (Optional)
+                                </label>
+                                <input type="file" name="file" id="id_file" class="form-control">
+                                <small class="form-text text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Upload supporting documents: PDF, DOC, DOCX, images (Max 10MB)
+                                </small>
+                            </div>
+                            
+                            <div class="alert alert-warning border-warning">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <strong>Important Notice:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Review your answers carefully before submitting</li>
+                                    <li>You cannot edit after submission</li>
+                                    <li>Late submissions may be penalized</li>
+                                    <li>Ensure all questions are answered</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-check-circle-fill me-2"></i>Submit Assignment
+                                </button>
+                                <a href="{% url 'content:course_detail' assignment.course.pk %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i>Back to Course
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
+            
+            <!-- Teacher/Admin View - Submissions List -->
+            {% if show_submissions %}
+            <div class="card mt-4 shadow-sm border-0">
+                <div class="card-header bg-info text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="bi bi-people me-2"></i>Student Submissions
+                        </h6>
+                        <span class="badge bg-light text-dark">
+                            {{ assignment.submissions.count }} total
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if assignment.submissions.all %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><i class="bi bi-person me-1"></i> Student</th>
+                                    <th><i class="bi bi-calendar me-1"></i> Submitted</th>
+                                    <th><i class="bi bi-info-circle me-1"></i> Status</th>
+                                    <th><i class="bi bi-trophy me-1"></i> Score</th>
+                                    <th><i class="bi bi-gear me-1"></i> Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for submission in assignment.submissions.all %}
+                                <tr class="submission-row">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle me-2 text-primary fs-4"></i>
+                                            <div>
+                                                <strong>{{ submission.student.get_full_name|default:submission.student.username }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ submission.student.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="d-block">{{ submission.submitted_at|date:"M d, Y" }}</small>
+                                        <small class="text-muted">{{ submission.submitted_at|date:"g:i A" }}</small>
+                                        {% if submission.is_late %}
+                                        <br><span class="badge bg-danger mt-1">Late</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ submission.status|lower }}">
+                                            {{ submission.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if submission.score %}
+                                            <strong class="text-success fs-6">
+                                                {{ submission.score }}/{{ assignment.max_score }}
+                                            </strong>
+                                            {% if submission.percentage_score %}
+                                            <br>
+                                            <small class="text-muted">({{ submission.percentage_score|floatformat:1 }}%)</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Not graded</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'assessments:submission_detail' submission.pk %}" 
+                                               class="btn btn-outline-primary" title="View Details">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                            {% if not submission.score %}
+                                            <a href="{% url 'assessments:grade_submission' submission.pk %}" 
+                                               class="btn btn-success" title="Grade Submission">
+                                                <i class="bi bi-pencil-square"></i> Grade
+                                            </a>
+                                            {% else %}
+                                            <a href="{% url 'assessments:grade_submission' submission.pk %}" 
+                                               class="btn btn-outline-warning" title="Update Grade">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Summary Stats -->
+                    <div class="row mt-4 pt-3 border-top">
+                        <div class="col-md-4 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <h4 class="mb-0 text-primary">{{ assignment.submissions.count }}</h4>
+                                <small class="text-muted">Total Submissions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <h4 class="mb-0 text-success">{{ assignment.graded_count }}</h4>
+                                <small class="text-muted">Graded</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <h4 class="mb-0 text-warning">{{ assignment.submissions.count|add:"-"|add:assignment.graded_count }}</h4>
+                                <small class="text-muted">Pending</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 4rem; color: #dee2e6;"></i>
+                        <h5 class="mt-3 text-muted">No submissions yet</h5>
+                        <p class="text-muted">Students haven't submitted this assignment</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Info Card -->
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Quick Info
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 pb-3 border-bottom">
+                        <i class="bi bi-calendar-plus text-primary me-2"></i>
+                        <strong>Created:</strong><br>
+                        <small class="text-muted">{{ assignment.created_at|date:"M d, Y g:i A" }}</small>
+                    </div>
+                    <div class="mb-3 pb-3 border-bottom">
+                        <i class="bi bi-person-badge text-success me-2"></i>
+                        <strong>Created By:</strong><br>
+                        <small>{{ assignment.created_by.get_full_name|default:assignment.created_by.username }}</small>
+                    </div>
+                    <div class="mb-3 pb-3 border-bottom">
+                        <i class="bi bi-clock text-warning me-2"></i>
+                        <strong>Time Remaining:</strong><br>
+                        {% if assignment.is_overdue %}
+                            <small class="text-danger fw-bold">
+                                <i class="bi bi-exclamation-triangle"></i> Overdue
+                            </small>
+                        {% else %}
+                            <small class="text-success fw-bold">{{ assignment.due_date|timeuntil }}</small>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <i class="bi bi-people-fill text-info me-2"></i>
+                        <strong>Submissions:</strong><br>
+                        <small>
+                            {{ assignment.submission_count }} submitted
+                            {% if assignment.graded_count > 0 %}
+                            <br>{{ assignment.graded_count }} graded
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Assistant Card for Students -->
+            {% if user.is_student %}
+            <div class="card border-0 shadow-sm ai-assist-card mb-3">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-robot" style="font-size: 3.5rem;"></i>
+                    <h6 class="mt-3 mb-2 fw-bold">Need Help?</h6>
+                    <p class="mb-3 small opacity-75">
+                        Get AI assistance to understand the questions better
+                    </p>
+                    <a href="{% url 'ai_assistant:chat' %}" class="btn btn-light w-100">
+                        <i class="bi bi-chat-left-text me-2"></i>Ask AI Assistant
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Teacher Actions -->
+            {% if user.is_teacher or user.is_admin %}
+                {% if user == assignment.created_by or user.is_admin %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header" style="background-color: #ffc107;">
+                        <h6 class="mb-0">
+                            <i class="bi bi-gear-fill me-2"></i>Teacher Actions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'assessments:assignment_edit' assignment.pk %}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil-square me-2"></i>Edit Assignment
+                            </a>
+                            <a href="{% url 'assessments:submission_list' %}" class="btn btn-outline-info">
+                                <i class="bi bi-list-check me-2"></i>All Submissions
+                            </a>
+                            <a href="{% url 'assessments:assignment_delete' assignment.pk %}" class="btn btn-outline-danger">
+                                <i class="bi bi-trash me-2"></i>Delete Assignment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

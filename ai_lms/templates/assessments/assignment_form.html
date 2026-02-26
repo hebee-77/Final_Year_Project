@@ -1,0 +1,143 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{% if assignment %}Edit{% else %}Create{% endif %} Assignment - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-clipboard-plus me-2"></i>
+                        {% if assignment %}Edit Assignment{% else %}Create New Assignment{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="{{ form.title.id_for_label }}" class="form-label">
+                                    <i class="bi bi-card-heading me-1"></i>Assignment Title *
+                                </label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                <div class="text-danger small">{{ form.title.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.max_score.id_for_label }}" class="form-label">
+                                    <i class="bi bi-trophy me-1"></i>Max Score *
+                                </label>
+                                {{ form.max_score }}
+                                {% if form.max_score.errors %}
+                                <div class="text-danger small">{{ form.max_score.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.course.id_for_label }}" class="form-label">
+                                <i class="bi bi-book me-1"></i>Course *
+                            </label>
+                            {{ form.course }}
+                            {% if form.course.errors %}
+                            <div class="text-danger small">{{ form.course.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="bi bi-question-circle me-1"></i>{{ form.description.label }}
+                            </label>
+                            {{ form.description }}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.description.help_text }}
+                            </small>
+                            {% if form.description.errors %}
+                            <div class="text-danger small">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.instructions.id_for_label }}" class="form-label">
+                                <i class="bi bi-list-check me-1"></i>{{ form.instructions.label }}
+                            </label>
+                            {{ form.instructions }}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.instructions.help_text }}
+                            </small>
+                            {% if form.instructions.errors %}
+                            <div class="text-danger small">{{ form.instructions.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.due_date.id_for_label }}" class="form-label">
+                                    <i class="bi bi-calendar-event me-1"></i>Due Date *
+                                </label>
+                                {{ form.due_date }}
+                                {% if form.due_date.errors %}
+                                <div class="text-danger small">{{ form.due_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">
+                                    <i class="bi bi-toggle-on me-1"></i>Status *
+                                </label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                <div class="text-danger small">{{ form.status.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.attachment.id_for_label }}" class="form-label">
+                                <i class="bi bi-paperclip me-1"></i>{{ form.attachment.label }}
+                            </label>
+                            {{ form.attachment }}
+                            <small class="form-text text-muted d-block mt-1">
+                                {{ form.attachment.help_text }}
+                            </small>
+                            {% if form.attachment.errors %}
+                            <div class="text-danger small">{{ form.attachment.errors }}</div>
+                            {% endif %}
+                            {% if assignment and assignment.attachment %}
+                            <div class="mt-2">
+                                <a href="{{ assignment.attachment.url }}" class="btn btn-sm btn-outline-primary" download>
+                                    <i class="bi bi-download me-1"></i>Download Current File
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Tip:</strong> Write clear, specific questions. Include any necessary context, resources, or rubrics that students need to complete the assignment successfully.
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>
+                                {% if assignment %}Update{% else %}Create{% endif %} Assignment
+                            </button>
+                            <a href="{% if assignment %}{% url 'assessments:assignment_detail' assignment.pk %}{% else %}{% url 'assessments:assignment_list' %}{% endif %}" 
+                               class="btn btn-secondary btn-lg">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Subjects - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold"><i class="bi bi-tag me-2"></i>Subjects</h2>
+            <p class="text-muted">All available subject categories</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if user.is_admin %}
+            <a href="{% url 'content:subject_create' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle me-2"></i>Add Subject
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if subjects %}
+    <div class="row g-4">
+        {% for subject in subjects %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ subject.name }}</h5>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-tag me-1"></i>{{ subject.code }}
+                    </p>
+                    <p class="card-text">{{ subject.description|truncatewords:20 }}</p>
+                    
+                    <div class="mt-3">
+                        <span class="badge bg-primary">
+                            {{ subject.courses.count }} courses
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-inbox" style="font-size: 5rem; color: #dee2e6;"></i>
+        <h4 class="mt-3">No subjects available</h4>
+        {% if user.is_admin %}
+        <p class="text-muted">Create your first subject</p>
+        <a href="{% url 'content:subject_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-2"></i>Add Subject
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

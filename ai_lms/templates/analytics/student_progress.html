@@ -1,0 +1,167 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}My Progress - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold"><i class="bi bi-graph-up me-2"></i>My Learning Progress</h2>
+            <p class="text-muted">Track your progress across all courses</p>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3>{{ total_courses }}</h3>
+                <p><i class="bi bi-book me-1"></i>Total Courses</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #198754;">
+                <h3>{{ avg_completion }}%</h3>
+                <p><i class="bi bi-check-circle me-1"></i>Avg Completion</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #ffc107;">
+                <h3>{{ total_time }}</h3>
+                <p><i class="bi bi-clock me-1"></i>Minutes Studied</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #dc3545;">
+                <h3>{{ recent_activities.count }}</h3>
+                <p><i class="bi bi-activity me-1"></i>Recent Activities</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Course Progress -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Course Progress</h5>
+                </div>
+                <div class="card-body">
+                    {% if progress_records %}
+                    {% for progress in progress_records %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6>
+                                <a href="{% url 'analytics:course_progress_detail' progress.course.pk %}">
+                                    {{ progress.course.title }}
+                                </a>
+                            </h6>
+                            <span class="badge bg-primary">{{ progress.completion_percentage|floatformat:0 }}%</span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ progress.completion_percentage }}%;">
+                                {{ progress.materials_completed }}/{{ progress.total_materials }} materials
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            Last accessed: {{ progress.last_accessed|date:"M d, Y" }}
+                        </small>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center py-4">No course progress available yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Progress Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Visual Progress</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="progressChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-activity me-2"></i>Recent Activity</h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                    <div class="timeline">
+                        {% for activity in recent_activities %}
+                        <div class="timeline-item mb-3 pb-3 border-bottom">
+                            <div class="d-flex gap-2">
+                                <i class="bi bi-circle-fill text-primary" style="font-size: 0.5rem; margin-top: 6px;"></i>
+                                <div>
+                                    <small class="text-muted">{{ activity.timestamp|date:"M d, g:i A" }}</small>
+                                    <p class="mb-0 small">{{ activity.description }}</p>
+                                    {% if activity.course %}
+                                    <small class="text-muted">{{ activity.course.title }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'analytics:activity_log' %}" class="btn btn-sm btn-outline-primary w-100 mt-2">
+                        View All Activities
+                    </a>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No recent activities</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const progressData = {{ progress_data_json|safe }};
+
+if (progressData.length > 0) {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: progressData.map(item => item.course),
+            datasets: [{
+                label: 'Completion %',
+                data: progressData.map(item => item.completion),
+                backgroundColor: 'rgba(13, 110, 253, 0.5)',
+                borderColor: 'rgba(13, 110, 253, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

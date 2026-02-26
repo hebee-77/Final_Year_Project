@@ -1,0 +1,204 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}System Analytics - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold"><i class="bi bi-graph-up me-2"></i>System Analytics</h2>
+            <p class="text-muted">Platform-wide statistics and insights</p>
+        </div>
+    </div>
+    
+    <!-- User Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3>{{ total_users }}</h3>
+                <p><i class="bi bi-people me-1"></i>Total Users</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #198754;">
+                <h3>{{ total_students }}</h3>
+                <p><i class="bi bi-person me-1"></i>Students</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #ffc107;">
+                <h3>{{ total_teachers }}</h3>
+                <p><i class="bi bi-person-badge me-1"></i>Teachers</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #dc3545;">
+                <h3>{{ total_courses }}</h3>
+                <p><i class="bi bi-book me-1"></i>Courses</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Content Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3>{{ total_subjects }}</h3>
+                <p><i class="bi bi-tag me-1"></i>Subjects</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #198754;">
+                <h3>{{ total_materials }}</h3>
+                <p><i class="bi bi-file-text me-1"></i>Materials</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #ffc107;">
+                <h3>{{ total_assignments }}</h3>
+                <p><i class="bi bi-clipboard me-1"></i>Assignments</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #dc3545;">
+                <h3>{{ total_submissions }}</h3>
+                <p><i class="bi bi-upload me-1"></i>Submissions</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <h3>{{ total_ai_conversations }}</h3>
+                <p><i class="bi bi-chat-dots me-1"></i>AI Conversations</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left-color: #198754;">
+                <h3>{{ total_ai_generations }}</h3>
+                <p><i class="bi bi-magic me-1"></i>AI Generations</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left-color: #ffc107;">
+                <h3>{{ weekly_activities }}</h3>
+                <p><i class="bi bi-activity me-1"></i>Weekly Activities</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts and Details -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>User Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Top Courses by Enrollment</h5>
+                </div>
+                <div class="card-body">
+                    {% if course_enrollments %}
+                    <div class="list-group">
+                        {% for course in course_enrollments|slice:":5" %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>{{ course.title|truncatewords:8 }}</span>
+                                <span class="badge bg-primary">{{ course.student_count }} students</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No enrollment data</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Registrations</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                <tr>
+                                    <td>{{ user.get_full_name|default:user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td><span class="badge bg-primary">{{ user.get_role_display }}</span></td>
+                                    <td>{{ user.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No recent registrations</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const userDistribution = {{ user_distribution|safe }};
+
+const ctx = document.getElementById('userDistributionChart').getContext('2d');
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(userDistribution),
+        datasets: [{
+            data: Object.values(userDistribution),
+            backgroundColor: [
+                'rgba(13, 110, 253, 0.7)',
+                'rgba(25, 135, 84, 0.7)',
+                'rgba(220, 53, 69, 0.7)'
+            ],
+            borderColor: [
+                'rgba(13, 110, 253, 1)',
+                'rgba(25, 135, 84, 1)',
+                'rgba(220, 53, 69, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

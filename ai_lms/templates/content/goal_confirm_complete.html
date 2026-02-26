@@ -1,0 +1,42 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Complete Goal - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-trophy me-2"></i>Complete Goal</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="bi bi-trophy-fill text-warning" style="font-size: 5rem;"></i>
+                    
+                    <h5 class="mt-3">Congratulations!</h5>
+                    <p class="lead">Are you ready to mark this goal as complete?</p>
+                    
+                    <div class="alert alert-info text-start">
+                        <strong>Course:</strong> {{ goal.course.title }}<br>
+                        <strong>Goal:</strong> {{ goal.goal_text }}<br>
+                        <strong>Target Date:</strong> {{ goal.target_date|date:"M d, Y" }}
+                    </div>
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>Yes, Mark Complete!
+                            </button>
+                            <a href="{% url 'content:goal_list' %}" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

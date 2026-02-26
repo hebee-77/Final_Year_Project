@@ -1,0 +1,127 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{% if material %}Edit{% else %}Add{% endif %} Material - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-earmark-plus me-2"></i>
+                        {% if material %}Edit Material{% else %}Add Learning Material{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                Title *
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger small">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.material_type.id_for_label }}" class="form-label">
+                                Material Type *
+                            </label>
+                            {{ form.material_type }}
+                            {% if form.material_type.errors %}
+                            <div class="text-danger small">{{ form.material_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3" id="content-field">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">
+                                Content
+                            </label>
+                            {{ form.content }}
+                            <small class="form-text text-muted">For text-based materials</small>
+                            {% if form.content.errors %}
+                            <div class="text-danger small">{{ form.content.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3" id="file-field">
+                            <label for="{{ form.file.id_for_label }}" class="form-label">
+                                File Upload
+                            </label>
+                            {{ form.file }}
+                            <small class="form-text text-muted">For PDF or video files</small>
+                            {% if form.file.errors %}
+                            <div class="text-danger small">{{ form.file.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3" id="link-field">
+                            <label for="{{ form.external_link.id_for_label }}" class="form-label">
+                                External Link
+                            </label>
+                            {{ form.external_link }}
+                            <small class="form-text text-muted">Full URL including http:// or https://</small>
+                            {% if form.external_link.errors %}
+                            <div class="text-danger small">{{ form.external_link.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.order.id_for_label }}" class="form-label">
+                                Display Order
+                            </label>
+                            {{ form.order }}
+                            <small class="form-text text-muted">Lower numbers appear first</small>
+                            {% if form.order.errors %}
+                            <div class="text-danger small">{{ form.order.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Save Material
+                            </button>
+                            <a href="{% url 'content:course_detail' course.pk %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide fields based on material type
+document.getElementById('id_material_type').addEventListener('change', function() {
+    const type = this.value;
+    const contentField = document.getElementById('content-field');
+    const fileField = document.getElementById('file-field');
+    const linkField = document.getElementById('link-field');
+    
+    // Hide all
+    contentField.style.display = 'none';
+    fileField.style.display = 'none';
+    linkField.style.display = 'none';
+    
+    // Show relevant field
+    if (type === 'TEXT') {
+        contentField.style.display = 'block';
+    } else if (type === 'PDF' || type === 'VIDEO') {
+        fileField.style.display = 'block';
+    } else if (type === 'LINK') {
+        linkField.style.display = 'block';
+    }
+});
+
+// Trigger on page load
+document.getElementById('id_material_type').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

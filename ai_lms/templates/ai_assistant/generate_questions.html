@@ -1,0 +1,59 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Generate Practice Questions - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-question-circle me-2"></i>Practice Question Generator</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="topic" class="form-label">Topic *</label>
+                            <input type="text" name="topic" class="form-control" 
+                                   placeholder="e.g., World War II, Calculus" required
+                                   value="{{ topic }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="count" class="form-label">Number of Questions *</label>
+                            <input type="number" name="count" class="form-control" 
+                                   min="1" max="10" value="{{ count|default:5 }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="course" class="form-label">Related Course (Optional)</label>
+                            <select name="course" class="form-select">
+                                <option value="">Select a course...</option>
+                                {% for course in user.enrolled_courses.all %}
+                                <option value="{{ course.pk }}">{{ course.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-magic me-2"></i>Generate Questions
+                        </button>
+                    </form>
+                    
+                    {% if questions %}
+                    <hr class="my-4">
+                    
+                    <h5><i class="bi bi-check-circle text-primary me-2"></i>Practice Questions</h5>
+                    <div class="alert alert-primary">
+                        {{ questions|linebreaks }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

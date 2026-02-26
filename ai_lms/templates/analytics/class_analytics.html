@@ -1,0 +1,198 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Class Analytics - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold"><i class="bi bi-bar-chart me-2"></i>Class Analytics</h2>
+            <h5 class="text-muted">{{ course.title }}</h5>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3>{{ class_stats.total_students }}</h3>
+                <p><i class="bi bi-people me-1"></i>Total Students</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #198754;">
+                <h3>{{ class_stats.avg_progress|floatformat:1 }}%</h3>
+                <p><i class="bi bi-graph-up me-1"></i>Avg Progress</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #ffc107;">
+                <h3>{{ submission_rate|floatformat:1 }}%</h3>
+                <p><i class="bi bi-clipboard-check me-1"></i>Submission Rate</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #dc3545;">
+                <h3>{{ class_stats.assignments_count }}</h3>
+                <p><i class="bi bi-file-earmark me-1"></i>Assignments</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Progress Distribution Chart -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Progress Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="progressDistributionChart" height="80"></canvas>
+                </div>
+            </div>
+            
+            <!-- Top Performers -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Top Performers</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_performers %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Student</th>
+                                    <th>Progress</th>
+                                    <th>Materials</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for progress in top_performers %}
+                                <tr>
+                                    <td>
+                                        {% if forloop.counter == 1 %}
+                                        <i class="bi bi-trophy-fill text-warning fs-5"></i>
+                                        {% elif forloop.counter == 2 %}
+                                        <i class="bi bi-trophy-fill text-secondary fs-5"></i>
+                                        {% elif forloop.counter == 3 %}
+                                        <i class="bi bi-trophy-fill text-danger fs-5"></i>
+                                        {% else %}
+                                        {{ forloop.counter }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'analytics:student_performance' progress.student.pk %}">
+                                            {{ progress.student.get_full_name|default:progress.student.username }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="width: 150px;">
+                                            <div class="progress-bar bg-success" 
+                                                 style="width: {{ progress.completion_percentage }}%;">
+                                                {{ progress.completion_percentage|floatformat:0 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ progress.materials_completed }}/{{ progress.total_materials }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No progress data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Struggling Students -->
+            <div class="card mb-3">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Students Needing Support</h6>
+                </div>
+                <div class="card-body">
+                    {% if struggling_students %}
+                    <div class="list-group">
+                        {% for progress in struggling_students %}
+                        <a href="{% url 'analytics:student_performance' progress.student.pk %}" 
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ progress.student.get_full_name|default:progress.student.username }}</span>
+                                <span class="badge bg-warning">{{ progress.completion_percentage|floatformat:0 }}%</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">All students are progressing well!</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'assessments:assignment_create' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Create Assignment
+                        </a>
+                        <a href="{% url 'content:material_create' course.pk %}" class="btn btn-outline-success">
+                            <i class="bi bi-file-plus me-2"></i>Add Material
+                        </a>
+                        <a href="{% url 'content:course_detail' course.pk %}" class="btn btn-outline-info">
+                            <i class="bi bi-eye me-2"></i>View Course
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const distributionData = {{ progress_distribution|safe }};
+
+const ctx = document.getElementById('progressDistributionChart').getContext('2d');
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(distributionData),
+        datasets: [{
+            data: Object.values(distributionData),
+            backgroundColor: [
+                'rgba(220, 53, 69, 0.7)',
+                'rgba(255, 193, 7, 0.7)',
+                'rgba(13, 110, 253, 0.7)',
+                'rgba(25, 135, 84, 0.7)'
+            ],
+            borderColor: [
+                'rgba(220, 53, 69, 1)',
+                'rgba(255, 193, 7, 1)',
+                'rgba(13, 110, 253, 1)',
+                'rgba(25, 135, 84, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

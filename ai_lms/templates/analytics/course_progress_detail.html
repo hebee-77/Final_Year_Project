@@ -1,0 +1,143 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} Progress - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'analytics:student_progress' %}">Progress</a></li>
+            <li class="breadcrumb-item active">{{ course.title }}</li>
+        </ol>
+    </nav>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-graph-up me-2"></i>{{ course.title }}</h4>
+        </div>
+        <div class="card-body">
+            {% if progress %}
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <h6>Overall Progress</h6>
+                    <h3 class="text-primary">{{ progress.completion_percentage|floatformat:1 }}%</h3>
+                </div>
+                <div class="col-md-3">
+                    <h6>Materials</h6>
+                    <h3>{{ progress.materials_completed }}/{{ progress.total_materials }}</h3>
+                </div>
+                <div class="col-md-3">
+                    <h6>Time Spent</h6>
+                    <h3>{{ progress.time_spent_minutes }} min</h3>
+                </div>
+                <div class="col-md-3">
+                    <h6>Last Access</h6>
+                    <p class="mb-0">{{ progress.last_accessed|date:"M d, Y" }}</p>
+                </div>
+            </div>
+            
+            <div class="progress" style="height: 30px;">
+                <div class="progress-bar" role="progressbar" 
+                     style="width: {{ progress.completion_percentage }}%;">
+                    {{ progress.completion_percentage|floatformat:0 }}%
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Learning Materials</h5>
+                </div>
+                <div class="card-body">
+                    {% if materials %}
+                    <div class="list-group">
+                        {% for material in materials %}
+                        <a href="{% url 'content:material_detail' material.pk %}" 
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="bi bi-file-text text-primary me-2"></i>
+                                    {{ material.title }}
+                                </span>
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No materials available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Assignments</h5>
+                </div>
+                <div class="card-body">
+                    {% if assignments %}
+                    <p><strong>Completion Rate:</strong> {{ assignment_completion|floatformat:1 }}%</p>
+                    <div class="list-group">
+                        {% for assignment in assignments %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>{{ assignment.title }}</span>
+                                {% if assignment.pk in submissions.values_list('assignment_id', flat=True) %}
+                                <span class="badge bg-success">Submitted</span>
+                                {% else %}
+                                <span class="badge bg-danger">Pending</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No assignments available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Activities</h5>
+        </div>
+        <div class="card-body">
+            {% if activities %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Activity</th>
+                            <th>Description</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in activities %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-primary">{{ activity.get_activity_type_display }}</span>
+                            </td>
+                            <td>{{ activity.description }}</td>
+                            <td>{{ activity.timestamp|date:"M d, g:i A" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3 mb-0">No activities recorded</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

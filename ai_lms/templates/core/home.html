@@ -1,0 +1,128 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Home - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 fade-in">
+                <h1 class="display-4 fw-bold mb-4">
+                    Welcome to AI-Powered Learning
+                </h1>
+                <p class="lead mb-4">
+                    Experience personalized education with cutting-edge AI technology. 
+                    Learn smarter, achieve faster with adaptive learning paths.
+                </p>
+                <div class="d-flex gap-3">
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg">
+                        <i class="bi bi-person-plus me-2"></i>Get Started
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </a>
+                    {% else %}
+                    <a href="{% url 'core:dashboard' %}" class="btn btn-light btn-lg">
+                        <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-robot" style="font-size: 15rem; opacity: 0.2;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row text-center mb-5">
+        <div class="col">
+            <h2 class="fw-bold mb-3">Platform Features</h2>
+            <p class="text-muted">Everything you need for modern learning</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <i class="bi bi-brain text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">AI-Powered Learning</h5>
+                    <p class="card-text">
+                        Get personalized explanations, summaries, and practice questions 
+                        tailored to your learning style.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <i class="bi bi-graph-up text-success" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Progress Tracking</h5>
+                    <p class="card-text">
+                        Monitor your learning journey with detailed analytics and 
+                        visualizations of your progress.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <i class="bi bi-chat-dots text-info" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Real-Time Feedback</h5>
+                    <p class="card-text">
+                        Receive instant AI-driven feedback on assignments to improve 
+                        learning outcomes immediately.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <i class="bi bi-book text-warning" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Rich Course Content</h5>
+                    <p class="card-text">
+                        Access curriculum-aligned learning materials with videos, 
+                        documents, and interactive content.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <i class="bi bi-trophy text-danger" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Goal Setting</h5>
+                    <p class="card-text">
+                        Set personalized learning goals and track achievements to 
+                        stay motivated and focused.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <i class="bi bi-people text-secondary" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Collaborative Learning</h5>
+                    <p class="card-text">
+                        Connect with teachers and peers in an interactive learning 
+                        environment.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

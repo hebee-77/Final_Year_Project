@@ -1,0 +1,101 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Course Survey - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0"><i class="bi bi-star me-2"></i>Course Satisfaction Survey</h4>
+                </div>
+                <div class="card-body">
+                    <h5>{{ course.title }}</h5>
+                    <p class="text-muted mb-4">Your feedback helps us improve the course quality</p>
+                    
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.content_quality_rating.id_for_label }}" class="form-label">
+                                Content Quality *
+                            </label>
+                            <div class="d-flex align-items-center gap-3">
+                                {{ form.content_quality_rating }}
+                                <small class="text-muted">(1 = Poor, 5 = Excellent)</small>
+                            </div>
+                            {% if form.content_quality_rating.errors %}
+                            <div class="text-danger small">{{ form.content_quality_rating.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.ai_assistance_rating.id_for_label }}" class="form-label">
+                                AI Assistance Quality *
+                            </label>
+                            <div class="d-flex align-items-center gap-3">
+                                {{ form.ai_assistance_rating }}
+                                <small class="text-muted">(1 = Poor, 5 = Excellent)</small>
+                            </div>
+                            {% if form.ai_assistance_rating.errors %}
+                            <div class="text-danger small">{{ form.ai_assistance_rating.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.overall_satisfaction.id_for_label }}" class="form-label">
+                                Overall Satisfaction *
+                            </label>
+                            <div class="d-flex align-items-center gap-3">
+                                {{ form.overall_satisfaction }}
+                                <small class="text-muted">(1 = Very Dissatisfied, 5 = Very Satisfied)</small>
+                            </div>
+                            {% if form.overall_satisfaction.errors %}
+                            <div class="text-danger small">{{ form.overall_satisfaction.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Would you recommend this course? *</label>
+                            <div class="form-check">
+                                {{ form.would_recommend }}
+                                <label class="form-check-label" for="{{ form.would_recommend.id_for_label }}">
+                                    Yes, I would recommend this course
+                                </label>
+                            </div>
+                            {% if form.would_recommend.errors %}
+                            <div class="text-danger small">{{ form.would_recommend.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.comments.id_for_label }}" class="form-label">
+                                Additional Comments
+                            </label>
+                            {{ form.comments }}
+                            <small class="form-text text-muted">
+                                Share any additional thoughts or suggestions
+                            </small>
+                            {% if form.comments.errors %}
+                            <div class="text-danger small">{{ form.comments.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-send me-2"></i>Submit Survey
+                            </button>
+                            <a href="{% url 'content:course_detail' course.pk %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

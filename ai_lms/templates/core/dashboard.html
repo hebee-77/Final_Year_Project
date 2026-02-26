@@ -1,0 +1,255 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+            </h2>
+            <p class="text-muted">Welcome back, {{ user.get_full_name|default:user.username }}!</p>
+        </div>
+    </div>
+    
+    {% if user.is_student %}
+    <!-- Student Dashboard -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3>{{ enrolled_courses.count }}</h3>
+                <p><i class="bi bi-book me-1"></i>Enrolled Courses</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #198754;">
+                <h3>{{ pending_assignments.count }}</h3>
+                <p><i class="bi bi-clipboard-check me-1"></i>Pending Assignments</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #ffc107;">
+                <h3>{{ recent_progress.count }}</h3>
+                <p><i class="bi bi-graph-up me-1"></i>Active Progress</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #dc3545;">
+                <h3>0</h3>
+                <p><i class="bi bi-trophy me-1"></i>Achievements</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-book me-2"></i>My Courses</h5>
+                </div>
+                <div class="card-body">
+                    {% if enrolled_courses %}
+                        <div class="list-group">
+                            {% for course in enrolled_courses %}
+                            <a href="{% url 'content:course_detail' course.pk %}" 
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ course.title }}</h6>
+                                    <small class="text-muted">{{ course.subject.code }}</small>
+                                </div>
+                                <p class="mb-1 text-muted">{{ course.description|truncatewords:15 }}</p>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            No enrolled courses yet. 
+                            <a href="{% url 'content:course_list' %}">Browse courses</a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-robot me-2"></i>AI Assistant</h6>
+                </div>
+                <div class="card-body text-center">
+                    <i class="bi bi-chat-dots fs-1 text-success mb-3 d-block"></i>
+                    <p>Get instant help with your studies</p>
+                    <a href="{% url 'ai_assistant:chat' %}" class="btn btn-success">
+                        <i class="bi bi-chat-left-text me-2"></i>Start Chat
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-bell me-2"></i>Pending Tasks</h6>
+                </div>
+                <div class="card-body">
+                    {% if pending_assignments %}
+                        <ul class="list-unstyled mb-0">
+                            {% for assignment in pending_assignments %}
+                            <li class="mb-2 pb-2 border-bottom">
+                                <a href="{% url 'assessments:assignment_detail' assignment.pk %}" 
+                                   class="text-decoration-none">
+                                    <strong>{{ assignment.title }}</strong>
+                                </a>
+                                <br>
+                                <small class="text-danger">
+                                    <i class="bi bi-clock me-1"></i>Due: {{ assignment.due_date|date:"M d, Y" }}
+                                </small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">No pending assignments</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% elif user.is_teacher %}
+    <!-- Teacher Dashboard -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <h3>{{ courses_teaching.count }}</h3>
+                <p><i class="bi bi-book me-1"></i>My Courses</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left-color: #dc3545;">
+                <h3>{{ pending_reviews.count }}</h3>
+                <p><i class="bi bi-clipboard-check me-1"></i>Pending Reviews</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left-color: #198754;">
+                <h3>0</h3>
+                <p><i class="bi bi-people me-1"></i>Total Students</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-book me-2"></i>My Courses</h5>
+                </div>
+                <div class="card-body">
+                    {% if courses_teaching %}
+                        <div class="list-group">
+                            {% for course in courses_teaching %}
+                            <a href="{% url 'content:course_detail' course.pk %}" 
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ course.title }}</h6>
+                                    <span class="badge bg-primary">{{ course.enrolled_students.count }} students</span>
+                                </div>
+                                <p class="mb-1 text-muted">{{ course.description|truncatewords:15 }}</p>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No courses assigned yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Pending Reviews</h6>
+                </div>
+                <div class="card-body">
+                    {% if pending_reviews %}
+                        <ul class="list-unstyled mb-0">
+                            {% for submission in pending_reviews %}
+                            <li class="mb-2 pb-2 border-bottom">
+                                <a href="{% url 'assessments:submission_detail' submission.pk %}" 
+                                   class="text-decoration-none">
+                                    <strong>{{ submission.student.username }}</strong>
+                                </a>
+                                <br>
+                                <small class="text-muted">{{ submission.assignment.title }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">No pending reviews</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% elif user.is_admin %}
+    <!-- Admin Dashboard -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3>{{ total_students }}</h3>
+                <p><i class="bi bi-people me-1"></i>Total Students</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #198754;">
+                <h3>{{ total_teachers }}</h3>
+                <p><i class="bi bi-person-badge me-1"></i>Total Teachers</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #ffc107;">
+                <h3>{{ total_courses }}</h3>
+                <p><i class="bi bi-book me-1"></i>Total Courses</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #0dcaf0;">
+                <h3>0</h3>
+                <p><i class="bi bi-bar-chart me-1"></i>Active Sessions</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Admin Tools</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="/admin/" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-shield-lock me-2"></i>Admin Panel
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'content:subject_create' %}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-plus-circle me-2"></i>Add Subject
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'analytics:system_analytics' %}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-graph-up me-2"></i>System Analytics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

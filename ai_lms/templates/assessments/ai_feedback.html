@@ -1,0 +1,62 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}AI Feedback - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card mb-3">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-file-earmark me-2"></i>Submission</h5>
+        </div>
+        <div class="card-body">
+            <h6>Assignment: {{ submission.assignment.title }}</h6>
+            <p><strong>Student:</strong> {{ submission.student.get_full_name|default:submission.student.username }}</p>
+            
+            <div class="bg-light p-3 rounded mt-3">
+                <strong>Submitted Content:</strong>
+                <div class="mt-2">{{ submission.content|linebreaks }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="bi bi-robot me-2"></i>AI-Generated Feedback</h4>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <h5><i class="bi bi-check-circle text-success me-2"></i>Strengths</h5>
+                <div class="alert alert-success">
+                    {{ ai_feedback.strengths|linebreaks }}
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h5><i class="bi bi-exclamation-circle text-warning me-2"></i>Areas for Improvement</h5>
+                <div class="alert alert-warning">
+                    {{ ai_feedback.improvements|linebreaks }}
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h5><i class="bi bi-lightbulb text-info me-2"></i>Suggestions</h5>
+                <div class="alert alert-info">
+                    {{ ai_feedback.suggestions|linebreaks }}
+                </div>
+            </div>
+            
+            <div class="text-muted small">
+                <i class="bi bi-clock me-1"></i>
+                Generated on {{ ai_feedback.generated_at|date:"M d, Y g:i A" }}
+            </div>
+            
+            <div class="mt-4">
+                <a href="{% url 'assessments:submission_detail' submission.pk %}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Submission
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

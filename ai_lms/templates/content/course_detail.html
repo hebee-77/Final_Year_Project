@@ -1,0 +1,233 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Course Header -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h2 class="fw-bold">{{ course.title }}</h2>
+                    <p class="text-muted">
+                        <i class="bi bi-tag me-2"></i>{{ course.subject.name }} ({{ course.subject.code }})
+                    </p>
+                    <p class="lead">{{ course.description }}</p>
+                    
+                    <div class="d-flex gap-3 mb-3">
+                        <span class="badge bg-info">
+                            <i class="bi bi-person me-1"></i>{{ course.teacher.get_full_name }}
+                        </span>
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-people me-1"></i>{{ course.enrolled_students.count }} Students
+                        </span>
+                        <span class="badge bg-primary">
+                            <i class="bi bi-book me-1"></i>{{ materials.count }} Materials
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    {% if course.thumbnail %}
+                    <img src="{{ course.thumbnail.url }}" class="img-fluid rounded" 
+                         alt="{{ course.title }}" style="max-height: 200px;">
+                    {% endif %}
+                    
+                    {% if user.is_student %}
+                        {% if is_enrolled %}
+                        <div class="mt-3">
+                            <span class="badge bg-success fs-6">
+                                <i class="bi bi-check-circle me-1"></i>Enrolled
+                            </span>
+                        </div>
+                        {% else %}
+                        <form method="post" action="{% url 'content:course_enroll' course.pk %}" class="mt-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-plus-circle me-2"></i>Enroll Now
+                            </button>
+                        </form>
+                        {% endif %}
+                    {% elif user == course.teacher or user.is_admin %}
+                    <div class="mt-3">
+                        <a href="{% url 'content:course_edit' course.pk %}" class="btn btn-warning">
+                            <i class="bi bi-pencil me-2"></i>Edit Course
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if is_enrolled and progress %}
+            <div class="mt-4">
+                <h6>Your Progress</h6>
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar" role="progressbar" 
+                         style="width: {{ progress.completion_percentage }}%;">
+                        {{ progress.completion_percentage|floatformat:0 }}%
+                    </div>
+                </div>
+                <small class="text-muted">
+                    {{ progress.materials_completed }} of {{ progress.total_materials }} materials completed
+                </small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Course Content Tabs -->
+    <ul class="nav nav-tabs" id="courseTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="materials-tab" data-bs-toggle="tab" 
+                    data-bs-target="#materials" type="button">
+                <i class="bi bi-file-earmark-text me-2"></i>Learning Materials
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="assignments-tab" data-bs-toggle="tab" 
+                    data-bs-target="#assignments" type="button">
+                <i class="bi bi-clipboard-check me-2"></i>Assignments
+            </button>
+        </li>
+        {% if is_enrolled %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="progress-tab" data-bs-toggle="tab" 
+                    data-bs-target="#progress" type="button">
+                <i class="bi bi-graph-up me-2"></i>My Progress
+            </button>
+        </li>
+        {% endif %}
+    </ul>
+    
+    <div class="tab-content p-4 bg-white border border-top-0 rounded-bottom" id="courseTabsContent">
+        <!-- Materials Tab -->
+        <div class="tab-pane fade show active" id="materials" role="tabpanel">
+            {% if user == course.teacher or user.is_admin %}
+            <div class="mb-3">
+                <a href="{% url 'content:material_create' course.pk %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-2"></i>Add Material
+                </a>
+            </div>
+            {% endif %}
+            
+            {% if materials %}
+            <div class="list-group">
+                {% for material in materials %}
+                <a href="{% url 'content:material_detail' material.pk %}" 
+                   class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">
+                                {% if material.material_type == 'PDF' %}
+                                <i class="bi bi-file-pdf text-danger me-2"></i>
+                                {% elif material.material_type == 'VIDEO' %}
+                                <i class="bi bi-camera-video text-primary me-2"></i>
+                                {% elif material.material_type == 'LINK' %}
+                                <i class="bi bi-link-45deg text-info me-2"></i>
+                                {% else %}
+                                <i class="bi bi-file-text text-secondary me-2"></i>
+                                {% endif %}
+                                {{ material.title }}
+                            </h6>
+                            <small class="text-muted">{{ material.get_material_type_display }}</small>
+                        </div>
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-4">No learning materials available yet.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Assignments Tab -->
+        <div class="tab-pane fade" id="assignments" role="tabpanel">
+            {% if user == course.teacher or user.is_admin %}
+            <div class="mb-3">
+                <a href="{% url 'assessments:assignment_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-2"></i>Create Assignment
+                </a>
+            </div>
+            {% endif %}
+            
+            {% if assignments %}
+            <div class="list-group">
+                {% for assignment in assignments %}
+                <a href="{% url 'assessments:assignment_detail' assignment.pk %}" 
+                   class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi bi-clipboard-check me-2"></i>{{ assignment.title }}
+                            </h6>
+                            <p class="mb-1 text-muted small">{{ assignment.description|truncatewords:20 }}</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-warning">{{ assignment.max_score }} points</span>
+                            <br>
+                            <small class="text-muted">Due: {{ assignment.due_date|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-4">No assignments available yet.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Progress Tab -->
+        {% if is_enrolled %}
+        <div class="tab-pane fade" id="progress" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Course Statistics</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                    Materials Completed: {{ progress.materials_completed }}/{{ progress.total_materials }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-clock text-info me-2"></i>
+                                    Time Spent: {{ progress.time_spent_minutes }} minutes
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-calendar text-warning me-2"></i>
+                                    Last Accessed: {{ progress.last_accessed|date:"M d, Y" }}
+                                </li>
+                            </ul>
+                            <a href="{% url 'analytics:course_progress_detail' course.pk %}" 
+                               class="btn btn-primary btn-sm">
+                                View Detailed Analytics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Quick Actions</h6>
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'ai_assistant:chat' %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-robot me-2"></i>Ask AI About This Course
+                                </a>
+                                <a href="{% url 'content:goal_create' %}" class="btn btn-outline-success">
+                                    <i class="bi bi-target me-2"></i>Set Learning Goal
+                                </a>
+                                <a href="{% url 'feedback:survey_create' course.pk %}" class="btn btn-outline-warning">
+                                    <i class="bi bi-star me-2"></i>Rate This Course
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,219 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Manage Feedback - AI-Powered LMS{% endblock %}
+
+{% block extra_css %}
+<style>
+.feedback-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid;
+}
+
+.feedback-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.feedback-card.pending { border-left-color: #ffc107; }
+.feedback-card.in-progress { border-left-color: #0d6efd; }
+.feedback-card.resolved { border-left-color: #198754; }
+
+.badge.bg-pending { background-color: #ffc107 !important; }
+.badge.bg-in-progress { background-color: #0d6efd !important; }
+.badge.bg-resolved { background-color: #198754 !important; }
+
+.stats-card {
+    border-left: 4px solid;
+}
+.stats-card.total { border-left-color: #0d6efd; }
+.stats-card.pending { border-left-color: #ffc107; }
+.stats-card.resolved { border-left-color: #198754; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-1">
+                <i class="bi bi-chat-square-dots-fill me-2"></i>Manage Feedback
+            </h2>
+            <p class="text-muted">Review and respond to user feedback</p>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card stats-card total shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Feedback</h6>
+                            <h2 class="mb-0 fw-bold text-primary">{{ all_feedback.count }}</h2>
+                        </div>
+                        <i class="bi bi-chat-dots" style="font-size: 3rem; color: #0d6efd; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card stats-card pending shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Pending Review</h6>
+                            <h2 class="mb-0 fw-bold text-warning">
+                                {{ all_feedback|length }}
+                                {% comment %}Will be calculated{% endcomment %}
+                            </h2>
+                        </div>
+                        <i class="bi bi-hourglass-split" style="font-size: 3rem; color: #ffc107; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card stats-card resolved shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Resolved</h6>
+                            <h2 class="mb-0 fw-bold text-success" id="resolved-count">0</h2>
+                        </div>
+                        <i class="bi bi-check-circle" style="font-size: 3rem; color: #198754; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter Tabs -->
+    <ul class="nav nav-tabs mb-4" id="feedbackTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button">
+                <i class="bi bi-list-ul me-2"></i>All Feedback
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button">
+                <i class="bi bi-hourglass-split me-2"></i>Pending
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="resolved-tab" data-bs-toggle="tab" data-bs-target="#resolved" type="button">
+                <i class="bi bi-check-circle me-2"></i>Resolved
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Tab Content -->
+    <div class="tab-content" id="feedbackTabContent">
+        <!-- All Feedback -->
+        <div class="tab-pane fade show active" id="all" role="tabpanel">
+            {% if all_feedback %}
+            <div class="row">
+                {% for feedback in all_feedback %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card feedback-card {{ feedback.status|lower }} shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
+                                <br>
+                                <small class="text-muted">{{ feedback.created_at|date:"M d, Y g:i A" }}</small>
+                            </div>
+                            <span class="badge bg-{{ feedback.status|lower }}">
+                                {{ feedback.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">{{ feedback.subject }}</h6>
+                            <p class="card-text" style="white-space: pre-wrap;">{{ feedback.message|truncatewords:50 }}</p>
+                            
+                            {% if feedback.category %}
+                            <div class="mb-2">
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-tag me-1"></i>{{ feedback.get_category_display }}
+                                </span>
+                            </div>
+                            {% endif %}
+                            
+                            <a href="{% url 'feedback:feedback_review' feedback.pk %}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye me-1"></i>Review
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 4rem; color: #dee2e6;"></i>
+                    <h5 class="mt-3 text-muted">No Feedback Yet</h5>
+                    <p class="text-muted">User feedback will appear here</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Pending Tab -->
+        <div class="tab-pane fade" id="pending" role="tabpanel">
+            <div class="row" id="pending-feedback">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Resolved Tab -->
+        <div class="tab-pane fade" id="resolved" role="tabpanel">
+            <div class="row" id="resolved-feedback">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter feedback by status
+    const allCards = document.querySelectorAll('.feedback-card');
+    let pendingCount = 0;
+    let resolvedCount = 0;
+    
+    const pendingContainer = document.getElementById('pending-feedback');
+    const resolvedContainer = document.getElementById('resolved-feedback');
+    
+    allCards.forEach(card => {
+        const badge = card.querySelector('.badge');
+        const status = badge.textContent.trim().toLowerCase();
+        
+        const colDiv = card.parentElement.cloneNode(true);
+        
+        if (status === 'pending' || status === 'in progress') {
+            pendingCount++;
+            pendingContainer.appendChild(colDiv);
+        } else if (status === 'resolved') {
+            resolvedCount++;
+            resolvedContainer.appendChild(colDiv);
+        }
+    });
+    
+    // Update counts
+    document.getElementById('resolved-count').textContent = resolvedCount;
+    
+    // Show empty state if no items
+    if (pendingCount === 0) {
+        pendingContainer.innerHTML = '<div class="col-12"><div class="alert alert-info">No pending feedback</div></div>';
+    }
+    if (resolvedCount === 0) {
+        resolvedContainer.innerHTML = '<div class="col-12"><div class="alert alert-success">No resolved feedback yet</div></div>';
+    }
+});
+</script>
+{% endblock %}

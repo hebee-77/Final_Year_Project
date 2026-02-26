@@ -1,0 +1,62 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Get Explanation - AI-Powered LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="bi bi-lightbulb me-2"></i>AI Explanation Generator</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="topic" class="form-label">Topic *</label>
+                            <input type="text" name="topic" class="form-control" 
+                                   placeholder="e.g., Photosynthesis, Quadratic Equations" required
+                                   value="{{ topic }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="level" class="form-label">Difficulty Level *</label>
+                            <select name="level" class="form-select">
+                                <option value="beginner" {% if level == 'beginner' %}selected{% endif %}>Beginner</option>
+                                <option value="intermediate" {% if level == 'intermediate' or not level %}selected{% endif %}>Intermediate</option>
+                                <option value="advanced" {% if level == 'advanced' %}selected{% endif %}>Advanced</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="course" class="form-label">Related Course (Optional)</label>
+                            <select name="course" class="form-select">
+                                <option value="">Select a course...</option>
+                                {% for course in user.enrolled_courses.all %}
+                                <option value="{{ course.pk }}">{{ course.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-info">
+                            <i class="bi bi-magic me-2"></i>Generate Explanation
+                        </button>
+                    </form>
+                    
+                    {% if explanation %}
+                    <hr class="my-4">
+                    
+                    <h5><i class="bi bi-check-circle text-info me-2"></i>AI Explanation</h5>
+                    <div class="alert alert-info">
+                        {{ explanation|linebreaks }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
